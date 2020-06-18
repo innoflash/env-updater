@@ -3,12 +3,15 @@
 namespace Innoflash\EnvUpdater;
 
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use League\Flysystem\FileNotFoundException;
 
 class EnvUpdater
 {
     private $entries = null;
+    private $envFileData;
+    private $envOriginalEntries;
 
     public function __construct()
     {
@@ -19,15 +22,18 @@ class EnvUpdater
                 throw new FileNotFoundException('The .env file is not found. Consider running "cp .env.example .env"');
             }
 
-            $fileData = File::get($envFile);
-            $this->entries = collect(explode(PHP_EOL, $fileData))
-                ->reject(function ($val) {
-                    return empty($val);
-                })->mapWithKeys(function ($val) {
-                    [$key, $value] = explode('=', $val);
+            $this->envFileData = File::get($envFile);
 
-                    return [$key => $value];
-                });
+            $this->envOriginalEntries = collect(explode(PHP_EOL, $this->envFileData));
+
+            $this->entries = $this->envOriginalEntries->reject(function ($val) {
+                return empty($val);
+            })->mapWithKeys(function ($val) {
+
+                [$key, $value] = explode('=', $val);
+
+                return [$key => $value];
+            });
         } else {
             throw new AuthorizationException('You are not allowed to see the .env file in production');
         }
@@ -39,5 +45,32 @@ class EnvUpdater
     public function getEntries(): ?\Illuminate\Support\Collection
     {
         return $this->entries;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEnvFileData(): string
+    {
+        return $this->envFileData;
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection
+     */
+    public function getEnvOriginalEntries(): \Illuminate\Support\Collection
+    {
+        return $this->envOriginalEntries;
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection  $items
+     *
+     * @return bool|int
+     */
+    public function writeEnvFile(Collection $items){
+        $data = implode(PHP_EOL, $items->toArray());
+
+        return File::put(base_path('.env'), $data);
     }
 }
