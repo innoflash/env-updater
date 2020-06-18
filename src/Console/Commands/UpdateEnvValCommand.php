@@ -15,7 +15,7 @@ class UpdateEnvValCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'env-update {variable : The variable you wanna update} {value? : The value you want to set for the variable}';
+    protected $signature = 'env-update {variable : The variable you wanna update} {value? : The value you want to set for the variable} {--s|silent : To skip asking if blank values are added}';
 
     /**
      * The console command description.
@@ -47,23 +47,10 @@ class UpdateEnvValCommand extends Command
             $this->error('The .env does not have the '.$this->getVariable().' variable. Consider using "php artisan env-add"');
         }
 
-        if (! $value = $this->argument('value')) {
-            $useBlank = $this->confirm('Looks like you didn`t set a value for this variable. Do you want to use a blank for this?');
-            if ($useBlank) {
-                $value = '';
-            } else {
-                $value = $this->ask('Please enter the value you want to set for '.$this->getVariable());
-            }
-        }
-
-        if (Str::contains($value, ' ')) {
-            $value = '"'.$value.'"';
-        }
-
         $newData = $envUpdater->getEnvOriginalEntries()
-            ->map(function ($entry) use ($value) {
+            ->map(function ($entry) {
                 if (Str::startsWith($entry, $this->getVariable())) {
-                    return $this->getVariable().'='.$value;
+                    return $this->getVariable().'='.$this->getValue();
                 }
 
                 return $entry;

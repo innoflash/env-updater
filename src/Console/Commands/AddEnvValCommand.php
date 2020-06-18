@@ -14,7 +14,7 @@ class AddEnvValCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'env-add {variable : The variable you wanna add} {value? : The value you want to set for the variable}';
+    protected $signature = 'env-add {variable : The variable you wanna add} {value? : The value you want to set for the variable} {--s|silent : To skip asking if blank values are added}';
 
     /**
      * The console command description.
