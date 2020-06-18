@@ -4,10 +4,12 @@ namespace Innoflash\EnvUpdater\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Innoflash\EnvUpdater\Concerns\SavesToEnv;
 use Innoflash\EnvUpdater\EnvUpdater;
 
 class UpdateEnvValCommand extends Command
 {
+    use SavesToEnv;
     /**
      * The name and signature of the console command.
      *
@@ -41,10 +43,8 @@ class UpdateEnvValCommand extends Command
      */
     public function handle(EnvUpdater $envUpdater)
     {
-        $var = Str::upper($this->argument('variable'));
-
-        if (! in_array($var, $envUpdater->getEntries()->keys()->toArray())) {
-            $this->error('The .env does not have the '.$var.' variable. Consider using "php artisan env-add"');
+        if (! in_array($this->getVariable(), $envUpdater->getEntries()->keys()->toArray())) {
+            $this->error('The .env does not have the '.$this->getVariable().' variable. Consider using "php artisan env-add"');
         }
 
         if (! $value = $this->argument('value')) {
@@ -52,7 +52,7 @@ class UpdateEnvValCommand extends Command
             if ($useBlank) {
                 $value = '';
             } else {
-                $value = $this->ask('Please enter the value you want to set for '.$var);
+                $value = $this->ask('Please enter the value you want to set for '.$this->getVariable());
             }
         }
 
@@ -61,17 +61,17 @@ class UpdateEnvValCommand extends Command
         }
 
         $newData = $envUpdater->getEnvOriginalEntries()
-            ->map(function ($entry) use ($var, $value) {
-                if (Str::startsWith($entry, $var)) {
-                    return $var.'='.$value;
+            ->map(function ($entry) use ($value) {
+                if (Str::startsWith($entry, $this->getVariable())) {
+                    return $this->getVariable().'='.$value;
                 }
 
                 return $entry;
             });
 
         if ($envUpdater->writeEnvFile($newData)) {
-            $this->info($var.' updated successfully');
-        }else{
+            $this->info($this->getVariable().' updated successfully');
+        } else {
             $this->error('Failed to write the new value');
         };
     }
