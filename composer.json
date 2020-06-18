@@ -3,7 +3,10 @@
     "description": "A Laravel package to update the .env file directly on the terminal.",
     "keywords": [
         "innoflash",
-        "env-updater"
+        "env-updater",
+        "env update terminal",
+        "laravel env",
+        "laravel env update"
     ],
     "homepage": "https://github.com/innoflash/env-updater",
     "license": "MIT",
