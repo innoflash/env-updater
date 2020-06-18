@@ -3,6 +3,7 @@
 namespace Innoflash\EnvUpdater\Console\Commands;
 
 use Illuminate\Console\Command;
+use Innoflash\EnvUpdater\EnvUpdater;
 
 class EnvViewCommand extends Command
 {
@@ -11,19 +12,19 @@ class EnvViewCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'command:name';
+    protected $signature = 'env-view';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Reads and display the values in the .env file';
 
     /**
      * Create a new command instance.
      *
-     * @return void
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function __construct()
     {
@@ -33,10 +34,17 @@ class EnvViewCommand extends Command
     /**
      * Execute the console command.
      *
+     * @param  \Innoflash\EnvUpdater\EnvUpdater  $envUpdater
+     *
      * @return mixed
      */
-    public function handle()
+    public function handle(EnvUpdater $envUpdater)
     {
-        //
+        $this->info('all is ok');
+
+        $tableEntries = $envUpdater->getEntries()->map(function($val, $key){
+            return [$key, $val];
+        });
+        $this->table(['Key', 'Value'], $tableEntries);
     }
 }
