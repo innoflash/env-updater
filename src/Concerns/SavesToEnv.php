@@ -85,6 +85,7 @@ trait SavesToEnv
 
             if ($useNextCommand) {
                 $this->call($this->nextCommand(), [
+                    'variable' => $this->getVariable(),
                     '--silent' => $this->option('silent'),
                 ]);
             }

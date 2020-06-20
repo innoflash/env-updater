@@ -3,6 +3,7 @@
 namespace Innoflash\EnvUpdater\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Innoflash\EnvUpdater\Concerns\SavesToEnv;
 use Innoflash\EnvUpdater\EnvUpdater;
 
@@ -36,12 +37,36 @@ class AddEnvValCommand extends Command
     /**
      * Execute the console command.
      *
-     * @param  \Innoflash\EnvUpdater\EnvUpdater  $envUpdater
+     * @param \Innoflash\EnvUpdater\EnvUpdater $envUpdater
      *
      * @return mixed
      */
     public function handle(EnvUpdater $envUpdater)
     {
+        $this->processEnv($envUpdater);
+    }
 
+    /**
+     * @inheritDoc
+     */
+    protected function variableShouldExist(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function nextCommand(): string
+    {
+        return 'env-update';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getWriteData(Collection $entries): Collection
+    {
+        return $entries->put($this->getVariable(), $this->getValue());
     }
 }

@@ -3,6 +3,7 @@
 namespace Innoflash\EnvUpdater;
 
 use Illuminate\Support\ServiceProvider;
+use Innoflash\EnvUpdater\Console\Commands\AddEnvValCommand;
 use Innoflash\EnvUpdater\Console\Commands\EnvViewCommand;
 use Innoflash\EnvUpdater\Console\Commands\UpdateEnvValCommand;
 
@@ -23,6 +24,7 @@ class EnvUpdaterServiceProvider extends ServiceProvider
             $this->commands([
                 EnvViewCommand::class,
                 UpdateEnvValCommand::class,
+                AddEnvValCommand::class,
             ]);
         }
     }
