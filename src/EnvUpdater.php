@@ -34,6 +34,8 @@ class EnvUpdater
                 [$key, $value] = explode('=', $val);
 
                 return [$key => $value];
+            })->sortBy(function ($val, $key){
+                return $key;
             });
         } else {
             throw new AuthorizationException('You are not allowed to see the .env file in production');
