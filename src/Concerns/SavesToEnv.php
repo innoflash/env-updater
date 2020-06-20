@@ -2,6 +2,7 @@
 
 namespace Innoflash\EnvUpdater\Concerns;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Innoflash\EnvUpdater\EnvUpdater;
 
@@ -20,6 +21,15 @@ trait SavesToEnv
      * @return string
      */
     protected abstract function nextCommand(): string;
+
+    /**
+     * Returns the data that should be copied to the .env file.
+     *
+     * @param \Illuminate\Support\Collection $entries
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected abstract function getWriteData(Collection $entries): Collection;
 
     /**
      * Converts the variable to uppercase.
@@ -66,7 +76,7 @@ trait SavesToEnv
      *
      * @return void
      */
-    protected function scanEnvFile(EnvUpdater $envUpdater, \Closure $next)
+    protected function processEnv(EnvUpdater $envUpdater)
     {
         if (in_array($this->getVariable(),
                 $envUpdater->getEntries()->keys()->toArray()) !== $this->variableShouldExist()) {
@@ -79,7 +89,14 @@ trait SavesToEnv
                 ]);
             }
         } else {
-            $next($envUpdater);
+            if ($envUpdater->writeEnvFile($this->getWriteData($envUpdater->getEntries()))) {
+                $action = Str::of(class_basename($this))
+                    ->before('Env')
+                    ->lower();
+                $this->info($this->getVariable().' '.$action.'d successfully');
+            } else {
+                $this->error('Failed to write the new value');
+            };
         }
     }
 }

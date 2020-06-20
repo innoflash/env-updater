@@ -5,6 +5,7 @@ namespace Innoflash\EnvUpdater;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use League\Flysystem\FileNotFoundException;
 
 class EnvUpdater
@@ -66,13 +67,28 @@ class EnvUpdater
     /**
      * Update the .env file.
      *
-     * @param  \Illuminate\Support\Collection  $items
+     * @param \Illuminate\Support\Collection $items
      *
      * @return bool|int
      */
     public function writeEnvFile(Collection $items)
     {
-        $data = implode(PHP_EOL, $items->toArray());
+        $data = "";
+
+        foreach ($items->toArray() as $key => $value) {
+            $keys = $items->keys()->toArray();
+            $index = array_search($key, $keys);
+
+            if ($index != 0) {
+                $prevPrefix = Str::of($keys[$index - 1])->before('_');
+                $currentPrefix = Str::of($keys[$index])->before('_');
+
+                if (strcmp($prevPrefix, $currentPrefix) != 0) {
+                    $data .= PHP_EOL;
+                }
+            }
+            $data .= $key.'='.$value.PHP_EOL;
+        }
 
         return File::put(base_path('.env'), $data);
     }

@@ -3,6 +3,7 @@
 namespace Innoflash\EnvUpdater\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Innoflash\EnvUpdater\Concerns\SavesToEnv;
 use Innoflash\EnvUpdater\EnvUpdater;
@@ -43,22 +44,7 @@ class UpdateEnvValCommand extends Command
      */
     public function handle(EnvUpdater $envUpdater)
     {
-        $this->scanEnvFile($envUpdater, function (EnvUpdater $envUpdater) {
-            $newData = $envUpdater->getEnvOriginalEntries()
-                ->map(function ($entry) {
-                    if (Str::startsWith($entry, $this->getVariable())) {
-                        return $this->getVariable().'='.$this->getValue();
-                    }
-
-                    return $entry;
-                });
-
-            if ($envUpdater->writeEnvFile($newData)) {
-                $this->info($this->getVariable().' updated successfully');
-            } else {
-                $this->error('Failed to write the new value');
-            };
-        });
+        $this->processEnv($envUpdater);
     }
 
     /**
@@ -75,5 +61,19 @@ class UpdateEnvValCommand extends Command
     protected function nextCommand(): string
     {
         return 'env-add';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getWriteData(Collection $entries): Collection
+    {
+        return $entries->map(function ($entry) {
+            if (Str::startsWith($entry, $this->getVariable())) {
+                return $this->getVariable().'='.$this->getValue();
+            }
+
+            return $entry;
+        });
     }
 }
