@@ -64,11 +64,14 @@ class EnvUpdater
     }
 
     /**
+     * Update the .env file.
+     *
      * @param  \Illuminate\Support\Collection  $items
      *
      * @return bool|int
      */
-    public function writeEnvFile(Collection $items){
+    public function writeEnvFile(Collection $items)
+    {
         $data = implode(PHP_EOL, $items->toArray());
 
         return File::put(base_path('.env'), $data);

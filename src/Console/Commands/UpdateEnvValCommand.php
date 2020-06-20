@@ -37,29 +37,43 @@ class UpdateEnvValCommand extends Command
     /**
      * Execute the console command.
      *
-     * @param  \Innoflash\EnvUpdater\EnvUpdater  $envUpdater
+     * @param \Innoflash\EnvUpdater\EnvUpdater $envUpdater
      *
      * @return mixed
      */
     public function handle(EnvUpdater $envUpdater)
     {
-        if (! in_array($this->getVariable(), $envUpdater->getEntries()->keys()->toArray())) {
-            $this->error('The .env does not have the '.$this->getVariable().' variable. Consider using "php artisan env-add"');
-        }
+        $this->scanEnvFile($envUpdater, function (EnvUpdater $envUpdater) {
+            $newData = $envUpdater->getEnvOriginalEntries()
+                ->map(function ($entry) {
+                    if (Str::startsWith($entry, $this->getVariable())) {
+                        return $this->getVariable().'='.$this->getValue();
+                    }
 
-        $newData = $envUpdater->getEnvOriginalEntries()
-            ->map(function ($entry) {
-                if (Str::startsWith($entry, $this->getVariable())) {
-                    return $this->getVariable().'='.$this->getValue();
-                }
+                    return $entry;
+                });
 
-                return $entry;
-            });
+            if ($envUpdater->writeEnvFile($newData)) {
+                $this->info($this->getVariable().' updated successfully');
+            } else {
+                $this->error('Failed to write the new value');
+            };
+        });
+    }
 
-        if ($envUpdater->writeEnvFile($newData)) {
-            $this->info($this->getVariable().' updated successfully');
-        } else {
-            $this->error('Failed to write the new value');
-        };
+    /**
+     * @inheritDoc
+     */
+    protected function variableShouldExist(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function nextCommand(): string
+    {
+        return 'env-add';
     }
 }
